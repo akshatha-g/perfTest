@@ -28,7 +28,7 @@ void randomize(int *array, int size) {
 /*
  * Measure the time taken to read a file sequentially
  */
-void sequential_read(char *filename, int loops) {
+void seq_read(char *filename, int loops) {
     int fd;
     struct stat sb;
     int i,j;
@@ -87,7 +87,7 @@ void sequential_read(char *filename, int loops) {
             }
             duration += (end - start);
         }
-        system("purge");
+        // system("sync && echo 3 > /proc/sys/vm/drop_caches");
     }
 
     free(buf);
@@ -102,7 +102,7 @@ void sequential_read(char *filename, int loops) {
 /*
  * Measure the time taken to read a file sequentially
  */
-void random_read(char *filename, int loops) {
+void rand_read(char *filename, int loops) {
     int fd;
     struct stat sb;
     int i,j;
@@ -165,9 +165,10 @@ void random_read(char *filename, int loops) {
             }
             duration += (end - start);
         }
-        system("purge");
+        // system("sync && echo 3 > /proc/sys/vm/drop_caches");
     }
 
+    free(index);
     free(buf);
     close(fd);
 
@@ -180,7 +181,72 @@ void random_read(char *filename, int loops) {
 /*
  * Measure the time taken to open the file, read a block, close the file.
  */
-void do_op_read(char *filename, int loops) {
+void open_read(char *filename, int loops) {
+    int fd;
+    struct stat sb;
+    int i,j;
+
+
+#ifdef _GNU_SOURCE    
+    //Set cpu affinity
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(0, &set);
+    if (sched_setaffinity(0, sizeof(cpu_set_t), &set) == -1) {
+        printf("Affinity Failed!\n");
+        exit(1);
+    }
+#endif
+
+    int pages = file_size / BLOCK_SIZE;
+
+    // Now read through file and measure the bandwidth.
+    char *buf = (char *)malloc(BLOCK_SIZE);
+
+    timestamp start     = 0;
+    timestamp end       = 0;
+    timestamp duration  = 0;
+
+
+    for( i = 0; i < loops; i++) {
+        for( j = 0 ; j < pages ; j++) { 
+            RDTSCP(start);
+            
+            fd = open(filename, O_RDONLY | O_SYNC | O_DIRECT );
+            if(fd == -1) {
+                printf("Could not open file descriptor for file %s\n", filename);
+                exit(1);
+            }
+
+            ssize_t bytes = read(fd, buf, BLOCK_SIZE);
+
+            close(fd);
+    
+            RDTSCP(end);
+
+            duration += (end - start);
+
+            if (bytes <= 0) {
+                printf("Read failed. Being drastic to make my point!\n");
+                free(buf);
+                exit(1);
+            }
+        } /* end for */
+        // system("sync && echo 3 > /proc/sys/vm/drop_caches");
+    } /* end for */
+        
+    free(buf);
+    close(fd);
+
+    int number_of_blocks = pages * loops;
+    printf("%lf\n", (double)(duration)/number_of_blocks);
+
+}
+
+/*
+ * Measure the time taken to open the file, read a block, close the file.
+ */
+void open_access_read(char *filename, int loops) {
     int fd;
     struct stat sb;
     int i,j;
@@ -236,16 +302,19 @@ void do_op_read(char *filename, int loops) {
                 exit(1);
             }
         } /* end for */
-        system("purge");
+        // system("sync && echo 3 > /proc/sys/vm/drop_caches");
     } /* end for */
         
     free(buf);
+    free(index);
     close(fd);
 
     int number_of_blocks = pages * loops;
     printf("%lf\n", (double)(duration)/number_of_blocks);
 
 }
+
+
 
 int main(int argc, char **argv) {
     if (argc != 3) {
@@ -255,9 +324,10 @@ int main(int argc, char **argv) {
 
     int loops = atoi(argv[2]);
 
-    sequential_read(argv[1], loops);
-    random_read(argv[1], loops);
-    do_op_read(argv[1], loops);
+    seq_read(argv[1], loops);
+    rand_read(argv[1], loops);
+    open_read(argv[1], loops);
+    open_access_read(argv[1], loops);
 
     return 0;
 }
