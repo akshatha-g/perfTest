@@ -100,7 +100,7 @@ void seq_read(char *filename, int loops) {
 }
 
 /*
- * Measure the time taken to read a file sequentially
+ * Measure the time taken to read a file by randomly accessing blocks.
  */
 void rand_read(char *filename, int loops) {
     int fd;
@@ -179,7 +179,7 @@ void rand_read(char *filename, int loops) {
 }
 
 /*
- * Measure the time taken to open the file, read a block, close the file.
+ * Measure the time taken to open the file, read first block, close the file.
  */
 void open_read(char *filename, int loops) {
     int fd;
@@ -277,7 +277,6 @@ void open_access_read(char *filename, int loops) {
 
 
     for( i = 0; i < loops; i++) {
-        for( j = 0 ; j < pages ; j++) { 
             RDTSCP(start);
             fd = open(filename, O_RDONLY | O_SYNC | O_DIRECT );
             if(fd == -1) {
@@ -301,8 +300,7 @@ void open_access_read(char *filename, int loops) {
                 free(buf);
                 exit(1);
             }
-        } /* end for */
-        // system("sync && echo 3 > /proc/sys/vm/drop_caches");
+            // system("sync && echo 3 > /proc/sys/vm/drop_caches");
     } /* end for */
         
     free(buf);
@@ -326,7 +324,7 @@ int main(int argc, char **argv) {
 
     seq_read(argv[1], loops);
     rand_read(argv[1], loops);
-    open_read(argv[1], loops);
+    open_read(argv[1], 100);
     open_access_read(argv[1], loops);
 
     return 0;
