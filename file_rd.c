@@ -1,15 +1,6 @@
-#include <sched.h>
 #include "utils.h"
 
 #define BLOCK_SIZE          4096
-
-/*
-
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
-*/
 
 long long int file_size;
 
@@ -19,11 +10,12 @@ long long int file_size;
  * Randomize an array.
  */
 void randomize(int *array, int size) {
-    for (int i = 0 ; i < size; i++) {
+    int i;
+    for( i = 0 ; i < size; i++) {
         array[i] = i;
     }
 
-    for (int i = size - 1 ; i > 0; i--) {
+    for( i = size - 1 ; i > 0; i--) {
         int index = rand() % i;
         SWAP((array + index) , (array + i));
     }
@@ -39,6 +31,7 @@ void randomize(int *array, int size) {
 void sequential_read(char *filename, int loops) {
     int fd;
     struct stat sb;
+    int i,j;
 
 #ifdef _GNU_SOURCE    
     //Set cpu affinity
@@ -51,17 +44,12 @@ void sequential_read(char *filename, int loops) {
     }
 #endif
 
-    fd = open(filename, O_RDONLY | O_SYNC /* | O_DIRECT */ );
+    fd = open(filename, O_RDONLY | O_SYNC  | O_DIRECT);
     if(fd == -1) {
         printf("Could not open file descriptor for file %s\n", filename);
         exit(1);
     }
 
-    if(fcntl(fd, F_NOCACHE, 1) == -1) {
-        printf("Could not disable cache effects\n");
-        exit(1);
-    }
-    
     if (fstat(fd,&sb) == -1) {
         printf("File stat failed for file %s\n", filename);
         exit(1);
@@ -83,12 +71,12 @@ void sequential_read(char *filename, int loops) {
     timestamp end       = 0;
     timestamp duration  = 0;
 
-    for (int i = 0; i < loops; i++) {
+    for( i = 0; i < loops; i++) {
         if (lseek(fd, 0, SEEK_SET) == -1) {
             printf("Could not seek to start  of file %s\n", filename);
             exit(1);
         }
-        for (int j = 0 ; j < pages ; j++) {
+        for( j = 0 ; j < pages ; j++) {
             RDTSCP(start);
             ssize_t bytes = read(fd, buf, BLOCK_SIZE);
             RDTSCP(end);
@@ -117,6 +105,7 @@ void sequential_read(char *filename, int loops) {
 void random_read(char *filename, int loops) {
     int fd;
     struct stat sb;
+    int i,j;
 
 #ifdef _GNU_SOURCE    
     //Set cpu affinity
@@ -129,17 +118,12 @@ void random_read(char *filename, int loops) {
     }
 #endif
 
-    fd = open(filename, O_RDONLY | O_SYNC /* | O_DIRECT */ );
+    fd = open(filename, O_RDONLY | O_SYNC  | O_DIRECT );
     if(fd == -1) {
         printf("Could not open file descriptor for file %s\n", filename);
         exit(1);
     }
 
-    if(fcntl(fd, F_NOCACHE, 1) == -1) {
-        printf("Could not disable cache effects\n");
-        exit(1);
-    }
-    
     if (fstat(fd,&sb) == -1) {
         printf("File stat failed for file %s\n", filename);
         exit(1);
@@ -161,12 +145,12 @@ void random_read(char *filename, int loops) {
     timestamp end       = 0;
     timestamp duration  = 0;
 
-    for (int i = 0; i < loops; i++) {
+    for( i = 0; i < loops; i++) {
         if (lseek(fd, 0, SEEK_SET) == -1) {
             printf("Could not seek to start  of file %s\n", filename);
             exit(1);
         }
-        for (int j = 0 ; j < pages ; j++) {
+        for( j = 0 ; j < pages ; j++) {
             if (lseek(fd, index[j] * BLOCK_SIZE , SEEK_SET) == -1) {
                 printf("Could not seek to start  of file %s\n", filename);
                 exit(1);
@@ -199,6 +183,8 @@ void random_read(char *filename, int loops) {
 void do_op_read(char *filename, int loops) {
     int fd;
     struct stat sb;
+    int i,j;
+
 
 #ifdef _GNU_SOURCE    
     //Set cpu affinity
@@ -224,10 +210,10 @@ void do_op_read(char *filename, int loops) {
     timestamp duration  = 0;
 
 
-    for (int i = 0; i < loops; i++) {
-        for (int j = 0 ; j < pages ; j++) { 
+    for( i = 0; i < loops; i++) {
+        for( j = 0 ; j < pages ; j++) { 
             RDTSCP(start);
-            fd = open(filename, O_RDONLY | O_SYNC /* | O_DIRECT */ );
+            fd = open(filename, O_RDONLY | O_SYNC | O_DIRECT );
             if(fd == -1) {
                 printf("Could not open file descriptor for file %s\n", filename);
                 exit(1);
