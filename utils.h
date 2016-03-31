@@ -12,10 +12,11 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <sched.h>
+#include <stdbool.h>
 
 ///     ALL CONSTANTS MUST BE DECLARED IN THE SECTION BEFORE                ///
 ///////////////////////////////////////////////////////////////////////////////
-#define LOOP_COUNTER        100
+#define LOOP_COUNTER        1
 
 #define CPU_FREQ            (2.60 * 1000000000)
 
@@ -28,13 +29,10 @@
     t = (((timestamp)a) | (((timestamp)d) << 32));                            \
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 ///     TYPES, ANY GENERAL DATA STRUCTURES                                  ///
 ///////////////////////////////////////////////////////////////////////////////
 typedef unsigned long long timestamp;
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ///         ALL FUNCTION DEFINITIONS MUST BE IN THE SECTION BEFORE          ///

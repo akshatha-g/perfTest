@@ -65,7 +65,6 @@ print "$cmd\n";
 
 system($cmd);
 
-=begin
 
 # 4M
 $count = ( 4 * 1024 * 1024 ) / $block_size;
@@ -119,6 +118,8 @@ print "$cmd\n";
 
 system($cmd);
 
+=begin
+
 # 5G
 $count = (5 * 1024 * 1024 * 1024) / $block_size;
 $filename = "file5G.txt";
@@ -158,4 +159,3 @@ print "$cmd\n";
 
 system($cmd);
 
-=end
