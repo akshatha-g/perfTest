@@ -1,7 +1,7 @@
 #include "utils.h"
 
 #define SWAP(a,b) { int tmp = *a; *a = *b; *b = tmp;}
-#define BLOCK_SIZE                  4096
+#define BLOCK_SIZE                  (32 * 1024)
 //#define FLAGS                       O_RDONLY
 #define FLAGS                       O_RDONLY | O_SYNC  | O_DIRECT 
 
@@ -161,7 +161,9 @@ void test(char *filename) {
 
     bool read           = true;
 
-    for (int i = 0; read && i < LOOP_COUNTER; i++) {
+    int i = 0;
+
+    for (i = 0; read && i < LOOP_COUNTER; i++) {
          if (lseek(fd, 0, SEEK_SET) == -1) {
             printf("Could not seek to start  of file %s\n", filename);
             exit(1);
