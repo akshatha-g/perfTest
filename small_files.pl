@@ -42,7 +42,7 @@ print "$cmd\n";
 system($cmd); 
 
 # 4k
-$count = 1;
+$count = (4 * 1024) / $block_size;
 $filename = "file4k.txt";
 $cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
 print "$cmd\n";

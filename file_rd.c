@@ -2,7 +2,8 @@
 
 #define SWAP(a,b) { int tmp = *a; *a = *b; *b = tmp;}
 #define BLOCK_SIZE                  (32 * 1024)
-//#define FLAGS                       O_RDONLY
+//#define BLOCK_SIZE                  (64)
+///#define FLAGS                       O_RDONLY
 #define FLAGS                       O_RDONLY | O_SYNC  | O_DIRECT 
 
 struct share_it {
@@ -97,7 +98,9 @@ bool do_open_seek_read(struct share_it* my_state) {
         RDTSCP(start);
         int new_fd = open(my_state->filename, FLAGS);
         if(new_fd == -1) {
-            printf("Could not open file descriptor for file %s\n", my_state->filename);
+            int err = errno;
+            printf("2: Could not open file descriptor for file %s with error %d\n",
+                    my_state->filename, err);
             exit(1);
         }
         if (lseek(new_fd, my_state->offsets[i] * block_size, SEEK_SET) == -1) {
@@ -105,6 +108,7 @@ bool do_open_seek_read(struct share_it* my_state) {
             exit(1);
         }
         bytes = read(new_fd, my_state->buf, block_size);
+        close(fd);
         RDTSCP(end);
         my_state->duration  += (end - start);
         if (bytes <= 0)
@@ -133,7 +137,7 @@ void test(char *filename) {
 
     fd = open(filename, FLAGS);
     if(fd == -1) {
-        printf("Could not open file descriptor for file %s\n", filename);
+        printf("1 : Could not open file descriptor for file %s\n", filename);
         exit(1);
     }
 
@@ -168,9 +172,9 @@ void test(char *filename) {
             printf("Could not seek to start  of file %s\n", filename);
             exit(1);
         }
-        read = do_sequential(&state);
+        //read = do_sequential(&state);
         //read = do_random(&state);
-        //read = do_open_seek_read(&state);
+        read = do_open_seek_read(&state);
         duration += state.duration;
     }
 
