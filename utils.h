@@ -13,6 +13,8 @@
 #include <string.h>
 #include <sched.h>
 #include <stdbool.h>
+#include <errno.h>
+
 
 ///     ALL CONSTANTS MUST BE DECLARED IN THE SECTION BEFORE                ///
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,10 +1,12 @@
 #include "utils.h"
 
 #define SWAP(a,b) { int tmp = *a; *a = *b; *b = tmp;}
-#define BLOCK_SIZE                  (32 * 1024)
+//#define BLOCK_SIZE                  (32 * 1024)
 //#define BLOCK_SIZE                  (64)
 ///#define FLAGS                       O_RDONLY
 #define FLAGS                       (O_RDONLY | O_SYNC  | O_DIRECT) 
+
+int BLOCK_SIZE = 64;
 
 struct share_it {
     int         fd;
@@ -44,6 +46,7 @@ bool do_sequential(struct share_it* my_state) {
     int bytes           = 0;
 
     while (size > 0) {
+//        printf("Iterating..\n");
         if (size < block_size)
             return true;
         RDTSCP(start);
@@ -108,10 +111,12 @@ bool do_open_seek_read(struct share_it* my_state) {
                     my_state->filename, err);
             exit(1);
         }
+/*
         if (lseek(new_fd, my_state->offsets[i] * block_size, SEEK_SET) == -1) {
             printf("Could not seek to start  of file %s\n", my_state->filename);
             exit(1);
         }
+*/
         bytes = read(new_fd, my_state->buf, block_size);
         close(fd);
         RDTSCP(end);
@@ -151,6 +156,8 @@ void test(char *filename) {
         exit(1);
     }
 
+    BLOCK_SIZE = sb.st_size;
+
     char *buf = (char *)malloc(BLOCK_SIZE);
 
     int pages = sb.st_size / BLOCK_SIZE;
@@ -177,9 +184,9 @@ void test(char *filename) {
             printf("Could not seek to start  of file %s\n", filename);
             exit(1);
         }
-        read = do_sequential(&state);
+        //read = do_sequential(&state);
         //read = do_random(&state);
-        //read = do_open_seek_read(&state);
+        read = do_open_seek_read(&state);
         duration += state.duration;
     }
 
@@ -197,6 +204,8 @@ int main(int argc, char **argv) {
         printf("Usage: ./file_rd.o <filename>\n");
         exit(1);
     }
+
+
 
     test(argv[1]);
 }

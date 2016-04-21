@@ -82,10 +82,123 @@ print "$cmd\n";
 
 system($cmd);
 
+# 10M
+$count = ( 10 * 1024 * 1024 ) / $block_size;
+$filename = "file10M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 12M
+$count = ( 12 * 1024 * 1024 ) / $block_size;
+$filename = "file12M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 14M
+$count = ( 14 * 1024 * 1024 ) / $block_size;
+$filename = "file14M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 16M
+$count = ( 16 * 1024 * 1024 ) / $block_size;
+$filename = "file16M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 18M
+$count = ( 18 * 1024 * 1024 ) / $block_size;
+$filename = "file18M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 20M
+$count = ( 20 * 1024 * 1024 ) / $block_size;
+$filename = "file20M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 22M
+$count = ( 22 * 1024 * 1024 ) / $block_size;
+$filename = "file22M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+
+
+
+# 24M
+$count = ( 24 * 1024 * 1024 ) / $block_size;
+$filename = "file24M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+
+
+# 32M
+$count = ( 32 * 1024 * 1024 ) / $block_size;
+$filename = "file32M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 64M
+$count = ( 64 * 1024 * 1024 ) / $block_size;
+$filename = "file64M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 100M
+$count = ( 100 * 1024 * 1024 ) / $block_size;
+$filename = "file100M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+
+
+# 128M
+$count = ( 128 * 1024 * 1024 ) / $block_size;
+$filename = "file128M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+# 200M
+$count = ( 200 * 1024 * 1024 ) / $block_size;
+$filename = "file200M.txt";
+$cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
+print "$cmd\n";
+
+system($cmd);
+
+
+
 # 256M
 
 $count = (256 * 1024 * 1024 ) / $block_size;
-$filename = "file16M.txt";
+$filename = "file256M.txt";
 $cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
 print "$cmd\n";
 system($cmd);
@@ -127,6 +240,7 @@ $cmd = "dd if=/dev/zero of=$filename bs=$block_size seek=0 count=$count";
 print "$cmd\n";
 system($cmd);
 
+
 # 6G
 $count = ( 6 * 1024 * 1024 * 1024 ) / $block_size;
 $filename = "file6G.txt";
@@ -159,3 +273,4 @@ print "$cmd\n";
 
 system($cmd);
 
+=end
