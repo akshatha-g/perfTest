@@ -4,6 +4,8 @@
 //#define FLAGS                       O_RDONLY
 #define FLAGS                       (O_RDONLY | O_SYNC  | O_DIRECT) 
 
+#define SHSZ                        (sizeof(double) * (65))
+
 struct share_it {
     int         fd;
     int*        offsets;
@@ -64,8 +66,6 @@ bool do_open_read_close(struct share_it* my_state) {
                     my_state->filename, err);
             exit(1);
         }
-
-   //     printf("3: fd is %d\n", new_fd);
         
         bytes = read(new_fd, my_state->buf, block_size);
         close(fd);
@@ -80,7 +80,7 @@ bool do_open_read_close(struct share_it* my_state) {
     return true;    
 }
 
-void test(char *filename) {
+double test(char *filename) {
     int fd;
     struct stat sb;
     struct share_it state;
@@ -128,19 +128,13 @@ void test(char *filename) {
 
     int i = 0;
 
- //   printf("1: fd is %d\n", fd);
-
     for (i = 0; read && i < LOOP_COUNTER; i++) {
-/*
-        if (lseek(fd, 0, SEEK_SET) == -1) {
-            int err = errno;
-            printf("2: fd is %d, errno is %d\n", fd, errno);
+         if (lseek(fd, 0, SEEK_SET) == -1) {
             printf("Could not seek to start  of file %s\n", filename);
             exit(1);
         }
-*/
-        //read = do_sequential(&state);
-        read = do_open_read_close(&state);
+        read = do_sequential(&state);
+        //read = do_open_read_close(&state);
         duration += state.duration;
     }
 
@@ -148,16 +142,45 @@ void test(char *filename) {
     close(fd);
 
     int number_of_blocks = pages * LOOP_COUNTER;
+    double time = (double)(duration)/number_of_blocks;
+    printf("%ld\t%lf\n", (long int)sb.st_size, time);
 
-    printf("%ld\t%lf\n", (long int)sb.st_size, (double)(duration)/number_of_blocks);
-
+    return time;
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        printf("Usage: ./rd_all <filename>\n");
+    double time = test(argv[1]);
+    
+    int index = atoi(argv[2]);
+
+
+    int shmid;
+    key_t key;
+    double *shm;
+
+    /*
+     * We need to get the segment named
+     * "5678", created by the server.
+     */
+    key = 5678;
+
+    /*
+     * Locate the segment.
+     */
+    if ((shmid = shmget(key, SHSZ, 0666)) < 0) {
+        perror("shmget");
         exit(1);
     }
-    
-    test(argv[1]);
+
+    /*
+     * Now we attach the segment to our data space.
+     */
+    if ((shm = shmat(shmid, NULL, 0)) == (double *) -1) {
+        perror("shmat");
+        exit(1);
+    }
+
+    shm[index] = time;
+
+    return 0; 
 }

@@ -177,8 +177,8 @@ void test(char *filename) {
             printf("Could not seek to start  of file %s\n", filename);
             exit(1);
         }
-        read = do_sequential(&state);
-        //read = do_random(&state);
+        //read = do_sequential(&state);
+        read = do_random(&state);
         //read = do_open_seek_read(&state);
         duration += state.duration;
     }

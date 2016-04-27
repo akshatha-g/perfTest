@@ -7,11 +7,11 @@ my $n = $ARGV[1];
 
 my $i = 0;
 
-my $cmd = "./file_rd $file";
+#my $cmd = "./file_rd $file";
 
 #my $cmd = "./ioctl $file";
 
-#my $cmd = "./rd_all $file";
+my $cmd = "./rd_all $file";
 
 for ($i = 0; $i < $n ; $i++) {
     system($cmd);
