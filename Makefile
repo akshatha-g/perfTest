@@ -1,8 +1,12 @@
 CC=gcc
 CXXFLAGS=-O0 -std=c11 -g -Wall
-LDFLAGS=-g
+LDFLAGS=-g -fopenmp
+CFLAGS=-fopenmp
 
-all: file_rd ioctl rd_all read_client throughput_small utils.o
+all: mp_small file_rd ioctl rd_all read_client throughput_small utils.o
+
+mp_small: mp_small.o utils.o	
+mp_small.o: mp_small.c
 
 throughput_small: throughput_small.o utils.o
 
@@ -27,4 +31,5 @@ file_rd.o: file_rd.c
 utils.o: utils.h
 
 clean:
-	rm -f file_rd ioctl rd_all read_client throughput_small *.o
+	rm -f mp_small file_rd ioctl rd_all read_client throughput_small *.o
+
