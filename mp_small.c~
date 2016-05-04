@@ -3,7 +3,7 @@
 
 //#define FLAGS                       O_RDONLY
 #define FLAGS                       (O_RDONLY | O_SYNC  | O_DIRECT) 
-#define FILE_COUNT                  100
+#define FILE_COUNT                  50
 
 struct share_it {
     int*        fd_list;
@@ -21,7 +21,6 @@ bool do_sequential(struct share_it* my_state) {
     size_t size         = my_state->size;
     timestamp start     = 0;
     timestamp end       = 0;
-    my_state->duration  = 0;
     int bytes           = 0;
 
 
@@ -79,12 +78,15 @@ int main(int argc, char **argv) {
             strcat(my_file, num);
 
             fd_list[i] = open(my_file, FLAGS);
+            int err = errno;
             if (fd_list[i] == -1) {
-                printf(" %d : Could not open file descriptor for file %s\n", 
-                        tid, my_file);
+                printf(" %d : Could not open file descriptor for file %s. Error = %d\n", 
+                        tid, my_file, err);
                 exit(1);
             }
         }
+
+//        printf("tid %d read till %d\n", tid, idx);
 
         struct stat sb;
         if (fstat(fd_list[0], &sb) == -1) {
@@ -103,17 +105,27 @@ int main(int argc, char **argv) {
         state.duration = 0;
 
         // Wait to read
-#pragma omp barrier 
+#pragma omp barrier
 
-        // Read
-        bool success = do_sequential(&state);
-        if (!success) {
-            printf("%d : Read failed\n", tid);
-            exit(1);
+        int j = 0;
+        for (i = 0; read && i < LOOP_COUNTER; i++) {
+            for (j = 0; j < FILE_COUNT; j++) {
+                if (lseek(fd_list[j], 0, SEEK_SET) == -1) {
+                    int err = errno;
+                    printf("2: fd is %d, errno is %d\n", fd_list[j], errno);
+                    exit(1);
+                }
+            }
+            // Read
+             bool success = do_sequential(&state);
+            if (!success) {
+                printf("%d : Read failed\n", tid);
+                exit(1);
+             }
         }
 
         // Get time taken 
-        double my_time = state.duration/FILE_COUNT;
+        double my_time = state.duration/(FILE_COUNT * LOOP_COUNTER);
 
 #pragma omp atomic
         time_taken += my_time;

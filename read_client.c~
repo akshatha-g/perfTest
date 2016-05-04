@@ -64,8 +64,6 @@ bool do_open_read_close(struct share_it* my_state) {
                     my_state->filename, err);
             exit(1);
         }
-
-   //     printf("3: fd is %d\n", new_fd);
         
         bytes = read(new_fd, my_state->buf, block_size);
         close(fd);
@@ -128,12 +126,8 @@ void test(char *filename) {
 
     int i = 0;
 
- //   printf("1: fd is %d\n", fd);
-
     for (i = 0; read && i < LOOP_COUNTER; i++) {
-        if (lseek(fd, 0, SEEK_SET) == -1) {
-            int err = errno;
-            printf("2: fd is %d, errno is %d\n", fd, errno);
+         if (lseek(fd, 0, SEEK_SET) == -1) {
             printf("Could not seek to start  of file %s\n", filename);
             exit(1);
         }
