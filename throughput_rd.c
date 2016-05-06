@@ -2,8 +2,8 @@
 #include "utils.h"
 
 #define FLAGS                       (O_RDONLY | O_SYNC  | O_DIRECT) 
-#define MAX_FILES                   5000
-#define FILE_COUNT                  100
+#define MAX_FILES                   1000
+#define FILE_COUNT                  200
 
 struct share_it {
     char*       buf;
@@ -60,7 +60,7 @@ bool do_sequential(struct share_it* my_state) {
 
 int main(int argc, char **argv) {
     if ( argc != 4) {
-        printf("Usage: ./mp_small <mnt_directory> <block_size> <num_of_threads>\n");
+        printf("Usage: ./throughput_rd <mnt_directory> <block_size> <num_of_threads>\n");
         exit(1);
     }
 
@@ -119,15 +119,15 @@ int main(int argc, char **argv) {
              }
         }
 
-        printf("Total bytes read is %ld\n", total_bytes);
-        printf("Total bytes read should be %ld\n", block_size * FILE_COUNT * LOOP_COUNTER);
+        //printf("Total bytes read is %ld\n", total_bytes);
+        //printf("Total bytes read should be %ld\n", block_size * FILE_COUNT * LOOP_COUNTER);
 
         // Find the throughput of this thread
         double total_read = (double)total_bytes / (1024 * 1024 * 1024); // Gb
         double time_taken = (double)state.duration / (CPU_FREQ * 1000000); // seconds
 
-        printf("Total bytes read is %lf Gb\n", total_read);
-        printf("Time taken is %lf seconds\n", time_taken);
+        //printf("Total bytes read is %lf Gb\n", total_read);
+        //printf("Time taken is %lf seconds\n", time_taken);
 
         double my_throughput = total_read / time_taken; // in GB/s
 

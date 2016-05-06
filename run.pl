@@ -7,7 +7,7 @@ my $n = $ARGV[1];
 
 my $i = 0;
 
-my $cmd = "./mp_small /mnt/ramdisk/ $file";
+my $cmd = "./mp_big /mnt/ramdisk/ $file";
 
 #my $cmd = "./file_rd $file";
 

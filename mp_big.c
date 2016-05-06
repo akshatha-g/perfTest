@@ -5,9 +5,12 @@
 #define FLAGS                       (O_RDONLY | O_SYNC  | O_DIRECT) 
 #define FILE_COUNT                  200
 #define MAX_FILES                   5000
+#define BLOCK_SIZE                  (32 * 1024)
+#define SWAP(a,b) { int tmp = *a; *a = *b; *b = tmp;}
 
 struct share_it {
     int*        fd_list;
+    int*        offsets;
     char*       buf;
     size_t      size;
     int         count;
@@ -19,23 +22,51 @@ int dummy_call(char* buf) {
     return (buf[0] == '0');
 }
 
-bool do_sequential(struct share_it* my_state) {
-    size_t size         = my_state->size;
+/*
+ * Randomize an array.
+ */
+void randomize(int *array, int size) {
+    int i;
+    for( i = 0 ; i < size; i++) {
+        array[i] = i;
+    }
+    for( i = size - 1 ; i > 0; i--) {
+        int index = rand() % i;
+        SWAP((array + index) , (array + i));
+    }
+    return;
+}
+ 
+
+bool do_random(struct share_it* my_state) {
     timestamp start     = 0;
     timestamp end       = 0;
     int bytes           = 0;
 
 
     int i = 0;
-    RDTSCP(start);
     for (i = 0; i < my_state->count; i++) { 
-        bytes = read(my_state->fd_list[i], my_state->buf, size);
-        if (bytes <= 0 || bytes != size)
-            return false;
-        //*(my_state->total_bytes) += bytes; 
+        size_t size         = my_state->size;
+        int fd              = my_state->fd_list[i];
+        int j = 0;
+        while ((size > 0)) {
+            if (lseek(fd, my_state->offsets[j] * BLOCK_SIZE, SEEK_SET) == -1) {
+                int err = errno;
+                printf("Could not seek to start  of file : offset %d, errno = %d\n", my_state->offsets[j], errno);
+                exit(1);
+            }
+            RDTSCP(start);
+            bytes = read(fd, my_state->buf, BLOCK_SIZE);
+            RDTSCP(end);
+            if (bytes <= 0 || bytes != BLOCK_SIZE)
+                return false;
+            dummy_call(my_state->buf);
+            my_state->duration  += (end - start);
+             //*(my_state->total_bytes) += bytes; 
+            size -= bytes;
+            j++;
+        }
     }
-    RDTSCP(end);
-    my_state->duration  += (end - start);
 
     return true;
 }
@@ -108,11 +139,17 @@ int main(int argc, char **argv) {
             exit(1);
         }
  
-        char *buf = (char *)malloc(sb.st_size);
+        char *buf = (char *)malloc(BLOCK_SIZE);
+
+        int pages = sb.st_size / BLOCK_SIZE;
+        int *index = (int *)malloc(sizeof(int) * pages);
+
+        randomize(index, pages);
 
         // Prepare for read.
         struct share_it state;
         state.fd_list  = fd_list;
+        state.offsets  = index;
         state.buf      = buf;
         state.size     = sb.st_size;
         state.count    = FILE_COUNT;
@@ -122,7 +159,7 @@ int main(int argc, char **argv) {
         // Wait to read
 #pragma omp barrier
 
-        bool success = do_sequential(&state);
+        bool success = do_random(&state);
         if (!success) {
             printf("%d : Read failed\n", tid);
             exit(1);
