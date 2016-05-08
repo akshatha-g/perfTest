@@ -1,44 +1,5 @@
-#include <omp.h>
 #include "utils.h"
-
-//#define FLAGS                       O_RDONLY
-#define FLAGS                       (O_RDONLY | O_SYNC  | O_DIRECT) 
-#define FILE_COUNT                  200
-#define MAX_FILES                   5000
-
-struct share_it {
-    int*        fd_list;
-    char*       buf;
-    size_t      size;
-    int         count;
-    timestamp   duration;
-    size_t*     total_bytes;
-};
-
-int dummy_call(char* buf) {
-    return (buf[0] == '0');
-}
-
-bool do_sequential(struct share_it* my_state) {
-    size_t size         = my_state->size;
-    timestamp start     = 0;
-    timestamp end       = 0;
-    int bytes           = 0;
-
-
-    int i = 0;
-    RDTSCP(start);
-    for (i = 0; i < my_state->count; i++) { 
-        bytes = read(my_state->fd_list[i], my_state->buf, size);
-        if (bytes <= 0 || bytes != size)
-            return false;
-        //*(my_state->total_bytes) += bytes; 
-    }
-    RDTSCP(end);
-    my_state->duration  += (end - start);
-
-    return true;
-}
+#include <omp.h>
 
 int main(int argc, char **argv) {
     if ( argc != 3) {
@@ -112,17 +73,18 @@ int main(int argc, char **argv) {
 
         // Prepare for read.
         struct share_it state;
-        state.fd_list  = fd_list;
-        state.buf      = buf;
-        state.size     = sb.st_size;
-        state.count    = FILE_COUNT;
-        state.duration = 0;
+        state.fd_list     = fd_list;
+        state.buf         = buf;
+        state.size        = sb.st_size;
+        state.block_size  = sb.st_size;
+        state.count       = FILE_COUNT;
+        state.duration    = 0;
         state.total_bytes = &total_bytes;
 
         // Wait to read
 #pragma omp barrier
 
-        bool success = do_sequential(&state);
+        bool success = read_sequential(&state);
         if (!success) {
             printf("%d : Read failed\n", tid);
             exit(1);

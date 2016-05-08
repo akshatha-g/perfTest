@@ -64,6 +64,12 @@ bool read_sequential(struct share_it* my_state) {
     for (i = 0; i < my_state->count; i++) {
         size_t size         = my_state->size;
         int fd              = my_state->fd_list[i];
+        if (lseek(fd, 0, SEEK_SET) == -1) {
+            int err = errno;
+            printf("Seek to start of file failed with errno %d\n",
+                   err);
+            exit(1);
+        }
         while ((size > 0)) { 
             RDTSCP(start);
             bytes = read(fd, my_state->buf, my_state->block_size);

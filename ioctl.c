@@ -1,6 +1,5 @@
 #include "utils.h"
 
-#define FLAGS                       (O_RDONLY | O_SYNC  | O_DIRECT)
 #define MY_IOCTL                    0xBCD00020
 
 int main(int argc, char **argv) {

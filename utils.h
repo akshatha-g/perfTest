@@ -21,8 +21,12 @@
 ///     ALL CONSTANTS MUST BE DECLARED IN THE SECTION BEFORE                ///
 ///////////////////////////////////////////////////////////////////////////////
 #define LOOP_COUNTER        100
-
-#define CPU_FREQ            2593.696 // Mhz
+#define SWAP(a,b)           { int tmp = *a; *a = *b; *b = tmp;}
+#define FLAGS               (O_RDONLY | O_SYNC  | O_DIRECT) 
+#define CPU_FREQ            2593.696 // Mh
+#define BLOCK_SIZE          (32*1024)
+#define FILE_COUNT          500
+#define MAX_FILES           500
 
 ///////////////////////////////////////////////////////////////////////////////
 ///     MACROS                                                              ///
@@ -37,6 +41,16 @@
 ///     TYPES, ANY GENERAL DATA STRUCTURES                                  ///
 ///////////////////////////////////////////////////////////////////////////////
 typedef unsigned long long timestamp;
+struct share_it {
+    int*        fd_list;
+    int*        offsets;
+    char*       buf;
+    int         count;
+    size_t      size;
+    size_t      block_size;
+    timestamp   duration;
+    size_t*     total_bytes; 
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 ///         ALL FUNCTION DEFINITIONS MUST BE IN THE SECTION BEFORE          ///
@@ -44,3 +58,8 @@ typedef unsigned long long timestamp;
 
 timestamp   rdtscp(void);
 void        cpuid(void);
+int         dummy_call(char* buf);
+void        randomize(int *index, int size);
+bool        read_sequential(struct share_it* my_state);
+bool        read_random(struct share_it* my_state);
+bool        open_read_close(struct share_it* my_state, char *filepath);

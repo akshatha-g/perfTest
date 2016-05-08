@@ -1,5 +1,5 @@
-#include "utils.h"
 #include <omp.h>
+#include "utils.h"
 
 int main(int argc, char **argv) {
     if ( argc != 3) {
@@ -69,11 +69,17 @@ int main(int argc, char **argv) {
             exit(1);
         }
  
-        char *buf = (char *)malloc(sb.st_size);
+        char *buf = (char *)malloc(BLOCK_SIZE);
+
+        int pages = sb.st_size / BLOCK_SIZE;
+        int *index = (int *)malloc(sizeof(int) * pages);
+
+        randomize(index, pages);
 
         // Prepare for read.
         struct share_it state;
         state.fd_list  = fd_list;
+        state.offsets  = index;
         state.buf      = buf;
         state.size     = sb.st_size;
         state.count    = FILE_COUNT;
@@ -83,7 +89,7 @@ int main(int argc, char **argv) {
         // Wait to read
 #pragma omp barrier
 
-        bool success = read_sequential(&state);
+        bool success = read_random(&state);
         if (!success) {
             printf("%d : Read failed\n", tid);
             exit(1);

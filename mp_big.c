@@ -1,76 +1,6 @@
 #include <omp.h>
 #include "utils.h"
 
-//#define FLAGS                       O_RDONLY
-#define FLAGS                       (O_RDONLY | O_SYNC  | O_DIRECT) 
-#define FILE_COUNT                  200
-#define MAX_FILES                   5000
-#define BLOCK_SIZE                  (32 * 1024)
-#define SWAP(a,b) { int tmp = *a; *a = *b; *b = tmp;}
-
-struct share_it {
-    int*        fd_list;
-    int*        offsets;
-    char*       buf;
-    size_t      size;
-    int         count;
-    timestamp   duration;
-    size_t*     total_bytes;
-};
-
-int dummy_call(char* buf) {
-    return (buf[0] == '0');
-}
-
-/*
- * Randomize an array.
- */
-void randomize(int *array, int size) {
-    int i;
-    for( i = 0 ; i < size; i++) {
-        array[i] = i;
-    }
-    for( i = size - 1 ; i > 0; i--) {
-        int index = rand() % i;
-        SWAP((array + index) , (array + i));
-    }
-    return;
-}
- 
-
-bool do_random(struct share_it* my_state) {
-    timestamp start     = 0;
-    timestamp end       = 0;
-    int bytes           = 0;
-
-
-    int i = 0;
-    for (i = 0; i < my_state->count; i++) { 
-        size_t size         = my_state->size;
-        int fd              = my_state->fd_list[i];
-        int j = 0;
-        while ((size > 0)) {
-            if (lseek(fd, my_state->offsets[j] * BLOCK_SIZE, SEEK_SET) == -1) {
-                int err = errno;
-                printf("Could not seek to start  of file : offset %d, errno = %d\n", my_state->offsets[j], errno);
-                exit(1);
-            }
-            RDTSCP(start);
-            bytes = read(fd, my_state->buf, BLOCK_SIZE);
-            RDTSCP(end);
-            if (bytes <= 0 || bytes != BLOCK_SIZE)
-                return false;
-            dummy_call(my_state->buf);
-            my_state->duration  += (end - start);
-             //*(my_state->total_bytes) += bytes; 
-            size -= bytes;
-            j++;
-        }
-    }
-
-    return true;
-}
-
 int main(int argc, char **argv) {
     if ( argc != 3) {
         printf("Usage: ./mp_small <mnt_directory> <num_of_threads>\n");
@@ -148,18 +78,19 @@ int main(int argc, char **argv) {
 
         // Prepare for read.
         struct share_it state;
-        state.fd_list  = fd_list;
-        state.offsets  = index;
-        state.buf      = buf;
-        state.size     = sb.st_size;
-        state.count    = FILE_COUNT;
-        state.duration = 0;
+        state.fd_list     = fd_list;
+        state.offsets     = index;
+        state.buf         =  buf;
+        state.size        = sb.st_size;
+        state.block_size  = (32 * 1024); 
+        state.count       = FILE_COUNT;
+        state.duration    = 0;
         state.total_bytes = &total_bytes;
 
         // Wait to read
 #pragma omp barrier
 
-        bool success = do_random(&state);
+        bool success = read_random(&state);
         if (!success) {
             printf("%d : Read failed\n", tid);
             exit(1);
