@@ -73,22 +73,24 @@ void test(char *path, bool sequential) {
     state.duration      = 0;
     state.total_bytes   = &total_bytes;
 
-    bool read           = false;
 
+    bool (*fptr)(struct share_it *); 
+    
     if (sequential) {
-        printf("Sequential\n");
-        read = read_sequential(&state);
+        fptr = &read_sequential;
     } else {
-        printf("Random\n");
-        read = read_random(&state);
+        fptr = &read_random;
     }
 
-   if(!read) {
-        printf("Read failed\n");
-        goto done;
+    for (i = 0; i < LOOP_COUNTER; i++) {
+        bool read = fptr(&state);
+        if(!read) {
+            printf("Read failed\n");
+            goto done;
+        }            
     }
 
-    int number_of_blocks = pages * FILE_COUNT;
+    int number_of_blocks = pages * FILE_COUNT * LOOP_COUNTER;
 
     printf("%ld\t%lf\n", (long int)sb.st_size, (double)(state.duration)/number_of_blocks);
 

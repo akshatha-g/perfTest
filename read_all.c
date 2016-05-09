@@ -19,7 +19,7 @@ void test_with_fileops(char *path) {
     // Read the file size, for determining our block size.
     char my_file[100] = {'\0'};
     strcat(my_file, path);
-    strcat(my_file, "\file1");
+    strcat(my_file, "/file1");
  
     int fd = open(my_file, FLAGS);
     if (fd == -1) {

@@ -20,13 +20,15 @@
 
 ///     ALL CONSTANTS MUST BE DECLARED IN THE SECTION BEFORE                ///
 ///////////////////////////////////////////////////////////////////////////////
-#define LOOP_COUNTER        100
 #define SWAP(a,b)           { int tmp = *a; *a = *b; *b = tmp;}
-#define FLAGS               (O_RDONLY | O_SYNC  | O_DIRECT) 
-#define CPU_FREQ            2593.696 // Mh
-#define BLOCK_SIZE          (32*1024)
-#define FILE_COUNT          500
-#define MAX_FILES           500
+#define FLAGS               (O_RDONLY) 
+
+// Set some defaults
+static int LOOP_COUNTER     = 100;
+static double CPU_FREQ      = 2593.696; // Mhz
+static int BLOCK_SIZE       = (32 * 1024);
+static int FILE_COUNT       = 10;
+static int MAX_FILES        = 10;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///     MACROS                                                              ///
@@ -58,6 +60,13 @@ struct share_it {
 
 timestamp   rdtscp(void);
 void        cpuid(void);
+void        set_LOOP_COUNTER(int loops);
+void        set_CPU_FREQ();
+void        set_BLOCK_SIZE(int block_size);
+void        set_FILE_COUNT(int file_count);
+void        set_MAX_FILES(int files);
+
+
 int         dummy_call(char* buf);
 void        randomize(int *index, int size);
 bool        read_sequential(struct share_it* my_state);
