@@ -81,7 +81,7 @@ void main(int argc, char *argv[]) {
         sprintf(cmd + strlen(cmd), "%d", file_count);
 
         printf("%s\n", cmd);
-        //system(cmd);
+        system(cmd);
 
 
         //prepare next command to run
