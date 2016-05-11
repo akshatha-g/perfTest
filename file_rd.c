@@ -1,5 +1,7 @@
 #include "utils.h"
 
+char results_file[12] = "results.txt";
+
 void test(char *path, bool sequential) {
     struct stat             sb;
     struct share_it         state;
@@ -94,6 +96,23 @@ void test(char *path, bool sequential) {
 
     printf("%ld\t%lf\n", (long int)sb.st_size, (double)(state.duration)/number_of_blocks);
 
+    int out = open(results_file, O_CREAT | O_RDWR);
+    if (lseek(out, 0, SEEK_END) == -1) {
+        int err = errno;
+        printf("Seek to end of file failed with errno %d\n", err);
+        exit(1);
+    }
+
+    char str[100] = {'\0'};
+    sprintf(str, "%ld", (long int)sb.st_size);
+    strcat(str, "\t");
+    sprintf(str + strlen(str), "%lf", (double)(state.duration)/number_of_blocks);
+    strcat(str, "\n");
+
+    write(out, str, strlen(str));
+
+    close(out);
+
 done:
     // Close all the files.
     for( i = 0; i< FILE_COUNT; i++)
@@ -106,10 +125,18 @@ done:
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) {
-        printf("Usage: ./file_rd.o <mount directory> <is_sequential?>\n");
+    if (argc < 3) {
+        printf("Usage: ./file_rd <mount_directory> <is_sequential?> [block_size] [file_count]\n");
+        printf("where mount_directory is where the file system is mounted\n");
+        printf("      is_sequential? is 1 if entire file should be read sequentially, 1 for random\n");
+        printf("      block_size is the data read from file in each access\n");
+        printf("      file_count is number of files to be read in each access\n"); 
         exit(1);
     }
+
+    set_BLOCK_SIZE(atoi(argv[3]));
+    set_FILE_COUNT(atoi(argv[4]));
+    set_MAX_FILES(atoi(argv[4]));
 
     test(argv[1], atoi(argv[2]));
 }

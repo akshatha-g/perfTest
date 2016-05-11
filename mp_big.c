@@ -24,6 +24,9 @@ int main(int argc, char **argv) {
     struct drand48_data randBuffer;
     srand48_r(time(NULL), &randBuffer);
 
+    timestamp start = 0;
+    timestamp end   = 0;
+
 /* Fork a team of threads with each thread having a private tid variable */
 #pragma omp parallel private(tid)
     {
@@ -61,8 +64,6 @@ int main(int argc, char **argv) {
             }
         }
 
-//        printf("tid %d read till %d\n", tid, idx);
-
         struct stat sb;
         if (fstat(fd_list[0], &sb) == -1) {
             printf("%d : File stat failed for file\n", tid);
@@ -87,6 +88,14 @@ int main(int argc, char **argv) {
         state.duration    = 0;
         state.total_bytes = &total_bytes;
 
+        // Collect stats
+#pragma omp barrier
+
+        if ( tid == 0) {
+            RDTSCP(start);
+        }
+ 
+
         // Wait to read
 #pragma omp barrier
 
@@ -96,28 +105,14 @@ int main(int argc, char **argv) {
             exit(1);
         }
 
-       //printf("Total bytes read is %ld\n", total_bytes);
-       //printf("Total bytes read should be %ld\n", sb.st_size * FILE_COUNT);
+#pragma omp barrier
+        if ( tid == 0) {
+            RDTSCP(end);
+        }
 
+#pragma omp barrier
+ 
 
-        // Find the throughput of this thread
-        //double total_read = (double)total_bytes / (1024 * 1024 * 1024); // Gb
-        double time_taken = (double)state.duration / (CPU_FREQ * 1000000); // seconds
-
-        //double my_throughput = total_read / time_taken; // in GB/s
-
-        //printf("Total bytes read is %lf Gb\n", total_read);
-        //printf("Time taken is %lf seconds\n", time_taken);
-
-        //printf("%lf\n", time_taken);
-
-
-#pragma omp atomic
-        total_time += time_taken;
-/*
-#pragma omp atomic
-        throughput += my_throughput;
-*/
         // Close all the files.
 
         for( i = 0; i< FILE_COUNT; i++)
@@ -132,13 +127,7 @@ int main(int argc, char **argv) {
 
     }  /* All threads join master thread and terminate */
 
-    //printf("%lf\n", (throughput)/nthreads);
-
-    //printf("Total bytes read is %lf bytes\n", read_data );
-    //printf("Time taken is %lf seconds\n", total_time );
-
-
-    double val = (read_data * nthreads ) / (  total_time * 1024 * 1024 * 1024); // GB/sec
+    double val = (read_data * nthreads * (CPU_FREQ * 1000000) ) / (  (end - start) * 1024 * 1024 * 1024); // GB/sec
     printf("%lf\n", val);
 
 }

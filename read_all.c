@@ -1,5 +1,7 @@
 #include "utils.h"
 
+char results_file[12] = "results.txt";
+
 void test_with_fileops(char *path) {
     struct stat             sb;
     struct share_it         state;
@@ -59,6 +61,25 @@ void test_with_fileops(char *path) {
     int number_of_blocks = sb.st_size * FILE_COUNT;
 
     printf("%ld\t%lf\n", (long int)sb.st_size, (double)(state.duration)/number_of_blocks);
+
+    int out = open(results_file, O_CREAT | O_RDWR);
+    if (lseek(out, 0, SEEK_END) == -1) {
+        int err = errno;
+        printf("Seek to end of file failed with errno %d\n", err);
+        exit(1);
+    }
+
+    char str[100] = {'\0'};
+    sprintf(str, "%ld", (long int)sb.st_size);
+    strcat(str, "\t");
+    sprintf(str + strlen(str), "%lf", (double)(state.duration)/number_of_blocks);
+    strcat(str, "\n");
+
+    write(out, str, strlen(str));
+
+    close(out);
+
+
 
 done:
     free(buf);
@@ -155,12 +176,20 @@ done:
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) {
-        printf("Usage: ./read_all <mount directory> <with open/close?>\n");
+    if (argc < 3) {
+        printf("Usage: ./read_all <mount_directory> <with open/close?> [file_count]\n");
+        printf("where mount_directory is where the file system is mounted\n");
+        printf("      with open/close? is 1 if open/close should be measured, 0 otherwise\n");
+        printf("      file_count is number of files to be read in each access\n"); 
         exit(1);
     }
 
     bool with_open_close = atoi(argv[2]);
+
+    printf("with_open_close is %d\n", with_open_close);
+
+    set_FILE_COUNT(atoi(argv[3]));
+    set_MAX_FILES(atoi(argv[3]));
 
     if (with_open_close) {
         test_with_fileops(argv[1]);
