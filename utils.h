@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <strings.h>
 #include <time.h>
@@ -20,12 +21,15 @@
 #include <errno.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <linux/random.h>
+#include <syscall.h>
 
 
 ///     ALL CONSTANTS MUST BE DECLARED IN THE SECTION BEFORE                ///
 ///////////////////////////////////////////////////////////////////////////////
 #define SWAP(a,b)           { int tmp = *a; *a = *b; *b = tmp;}
 #define FLAGS               (O_RDONLY | O_SYNC | O_DIRECT)
+#define WR_FLAGS            O_RDWR | O_CREAT
 
 // Set some defaults
 extern int LOOP_COUNTER;
@@ -33,6 +37,7 @@ extern double CPU_FREQ;
 extern int BLOCK_SIZE;
 extern int FILE_COUNT;
 extern int MAX_FILES;
+extern int FILE_SIZE_WR;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///     MACROS                                                              ///
@@ -55,7 +60,7 @@ struct share_it {
     size_t      size;
     size_t      block_size;
     timestamp   duration;
-    size_t*     total_bytes; 
+    size_t*     total_bytes;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,6 +74,7 @@ void        set_CPU_FREQ();
 void        set_BLOCK_SIZE(int block_size);
 void        set_FILE_COUNT(int file_count);
 void        set_MAX_FILES(int files);
+void        set_FILE_SIZE(int size);
 
 
 int         dummy_call(char* buf);
@@ -77,3 +83,5 @@ void        randomize_more(int *index, int size,struct drand48_data *randBuffer 
 bool        read_sequential(struct share_it* my_state);
 bool        read_random(struct share_it* my_state);
 bool        open_read_close(struct share_it* my_state, char *filepath);
+bool        write_sequential(struct share_it* my_state);
+bool        write_random(struct share_it* my_state);
