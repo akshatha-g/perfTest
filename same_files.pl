@@ -26,5 +26,5 @@ my $count = $size / $block_size;
 for (; $num <= $loopc ; $num++) {
     $cmd = "dd if=/dev/zero of=$dir".'/'."$file"."$num bs=$block_size seek=0 count=$count";
     print "$cmd\n";
-    system($cmd);
+    `$cmd`;
 }                                                                       

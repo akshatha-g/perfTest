@@ -2,6 +2,10 @@
 #define _GNU_SOURCE
 #endif
 
+#define _LARGEFILE64_SOURCE
+
+#include <sys/types.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,14 +25,14 @@
 ///     ALL CONSTANTS MUST BE DECLARED IN THE SECTION BEFORE                ///
 ///////////////////////////////////////////////////////////////////////////////
 #define SWAP(a,b)           { int tmp = *a; *a = *b; *b = tmp;}
-#define FLAGS               (O_RDONLY) 
+#define FLAGS               (O_RDONLY | O_SYNC | O_DIRECT)
 
 // Set some defaults
-static int LOOP_COUNTER     = 100;
-static double CPU_FREQ      = 2593.696; // Mhz
-static int BLOCK_SIZE       = (32 * 1024);
-static int FILE_COUNT       = 10;
-static int MAX_FILES        = 10;
+extern int LOOP_COUNTER;
+extern double CPU_FREQ;
+extern int BLOCK_SIZE;
+extern int FILE_COUNT;
+extern int MAX_FILES;
 
 ///////////////////////////////////////////////////////////////////////////////
 ///     MACROS                                                              ///
@@ -69,6 +73,7 @@ void        set_MAX_FILES(int files);
 
 int         dummy_call(char* buf);
 void        randomize(int *index, int size);
+void        randomize_more(int *index, int size,struct drand48_data *randBuffer );
 bool        read_sequential(struct share_it* my_state);
 bool        read_random(struct share_it* my_state);
 bool        open_read_close(struct share_it* my_state, char *filepath);

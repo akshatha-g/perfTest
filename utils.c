@@ -1,5 +1,14 @@
 #include "utils.h"
 
+// Set some defaults
+int LOOP_COUNTER     = 100;
+double CPU_FREQ      = 2593.696; // Mhz
+int BLOCK_SIZE       = (32 * 1024);
+int FILE_COUNT       = 300;
+int MAX_FILES        = 5000;
+
+
+
 /*
  * Name             rdtscp
  * Description      Runs the RDTSCP instruction which returns a 64-bit time
@@ -47,7 +56,6 @@ void set_CPU_FREQ() {
  
 void set_BLOCK_SIZE(int block_size) {
     BLOCK_SIZE = block_size;
-    printf("-->%d\n", BLOCK_SIZE);
 }
 
 void set_FILE_COUNT(int file_count) {
@@ -69,6 +77,19 @@ void randomize(int *index, int size) {
     for( i = size - 1 ; i > 0; i--) {
         int idx = rand() % i;
         SWAP((index + idx) , (index + i));
+    }
+    return;
+}
+
+/*
+ * Randomize an array.
+ */
+void randomize_more(int *index, int size,struct drand48_data *randBuffer ) {
+    int i;
+    long int random = 0;
+    for( i = 0 ; i < size; i++) {
+        lrand48_r(randBuffer, &random);
+        index[i] = random % size + 1;
     }
     return;
 }
