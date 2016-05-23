@@ -266,15 +266,12 @@ bool open_read_close(struct share_it* my_state, char *filepath) {
  * Name             write_sequential
  * Description      Write all the files in a sequential way.
  *                  -   The files to be written to must be opened and placed in share_it.fd_list
-<<<<<<< HEAD
  *                  -   Writes  the number of files FILE_COUNT sequentially by writing a block
  *                      of BLOCK_SIZE in each write operation. 
-=======
  *                      We choose the files in a random order, so that the effects of
  *                      prefetching are minimized.
  *                  -   Writes the number of files FILE_COUNT sequentially by writing a block
  *                      of BLOCK_SIZE in each write operation.
->>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
  *                  -   Small files are 64 bytes - 32 kB.
  *                  -   Big files are 32 kb onwards.
  *                  -   For small files, I have meassured with block size as 64 bytes
@@ -291,10 +288,7 @@ bool write_sequential(struct share_it* my_state) {
     timestamp start     = 0;
     timestamp end       = 0;
     int bytes           = 0;
-<<<<<<< HEAD
-=======
     int rand_bytes      = 0;
->>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
 
     int i = 0;
     for (i = 0; i < my_state->count; i++) {
@@ -302,17 +296,10 @@ bool write_sequential(struct share_it* my_state) {
         int fd              = my_state->fd_list[i];
         if (lseek(fd, 0, SEEK_SET) == -1) {
             int err = errno;
-<<<<<<< HEAD
             printf("Seek to start of file failed with errno %d\n",
                        err);
                 exit(1);
         }    
-        while ((size > 0)) { 
-=======
-            printf("Seek to start of file failed with errno %d\n", err);
-            exit(1);
-        }
-
         while ((size > 0)) {
             // fill buf with random data
 /*            rand_bytes = syscall(SYS_getrandom, my_state->buf, my_state->block_size, 0);
@@ -322,22 +309,15 @@ bool write_sequential(struct share_it* my_state) {
                 return false;
             }
 */
->>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
             RDTSCP(start);
             bytes = write(fd, my_state->buf, my_state->block_size);
             RDTSCP(end);
              if (bytes <= 0 || bytes != my_state->block_size) {
                 int err = errno;
-<<<<<<< HEAD
                 printf("Write failed with err=%d and bytes =%d while block_size=%zu\n", errno, bytes, my_state->block_size);
                 return false;
              }
-=======
-                printf("write failed with err=%d and bytes =%d while block_size=%zu\n", errno, bytes, my_state->block_size);
-                return false;
-             }
             dummy_call(my_state->buf);
->>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
             *(my_state->total_bytes) += bytes;
             my_state->duration  += (end - start);
             size -= bytes;
@@ -347,9 +327,6 @@ bool write_sequential(struct share_it* my_state) {
     return true;
 }
 
-<<<<<<< HEAD
-
-=======
 /*
  * Name             write_random
  * Description      Write all the files in a random order.
@@ -409,4 +386,3 @@ bool write_random(struct share_it* my_state) {
 
     return true;
 }
->>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37

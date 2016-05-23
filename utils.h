@@ -84,7 +84,4 @@ bool        read_sequential(struct share_it* my_state);
 bool        read_random(struct share_it* my_state);
 bool        open_read_close(struct share_it* my_state, char *filepath);
 bool        write_sequential(struct share_it* my_state);
-<<<<<<< HEAD
-=======
 bool        write_random(struct share_it* my_state);
->>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37

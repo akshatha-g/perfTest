@@ -3,11 +3,7 @@ CXXFLAGS=-O0 -std=c11 -g -Wall
 LDFLAGS=-g -fopenmp
 CFLAGS=-fopenmp
 
-<<<<<<< HEAD
-all: mp_small mp_big ioctl file_rd read_all utils.o latency measurements wrOneBigFile createFile readOneFile wrAppends writeMany
-=======
-all: mp_small mp_big ioctl file_read file_write read_all utils.o latency_read latency_write measurements wrOneBigFile createFile readOneFile
->>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
+all: mp_small mp_big ioctl file_read file_write read_all utils.o latency_read latency_write measurements wrOneBigFile createFile readOneFile createFile readOneFile wrAppends writeMany
 
 mp_big: mp_big.o utils.o
 mp_big.o: mp_big.c
@@ -54,9 +50,4 @@ writeMany: writeMany.o utils.o
 writeMany.o: writeMany.c
 
 clean:
-<<<<<<< HEAD
-	rm -f mp_small mp_big file_rd ioctl read_all latency measurements wrOneBigFile createFile readOneFile wrAppends writeMany *.o
-
-=======
-	rm -f mp_small mp_big file_read file_write ioctl read_all latency_read latency_write measurements wrOneBigFile createFile readOneFile *.o
->>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
+	rm -f mp_small mp_big file_read file_write ioctl read_all latency_read latency_write measurements wrOneBigFile createFile readOneFile wrAppends writeMany *.o
