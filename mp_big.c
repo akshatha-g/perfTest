@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
         // Wait to read
 #pragma omp barrier
 
-        bool success = read_random(&state);
+        bool success = read_sequential(&state);
         if (!success) {
             printf("%d : Read failed\n", tid);
             exit(1);
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
     }  /* All threads join master thread and terminate */
 
     double val = (read_data * nthreads * (CPU_FREQ * 1000000) ) / (  (end - start) * 1024 * 1024 * 1024); // GB/sec
-    printf("%lf\n", val);
+    printf("%lf\t", val);
 
 }
 

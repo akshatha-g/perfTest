@@ -6,7 +6,7 @@ double CPU_FREQ      = 2593.696; // Mhz
 int BLOCK_SIZE       = (32 * 1024);
 int FILE_COUNT       = 1000;
 int MAX_FILES        = 5000;
-
+int FILE_SIZE_WR     = 64;
 
 
 /*
@@ -18,7 +18,7 @@ int MAX_FILES        = 5000;
  *                  Reference:
  *                  https://www.ccsl.carleton.ca/~jamuir/rdtscpm1.pdf
  * Input            None
- * Output           timestamp, which is a 64-bit 
+ * Output           timestamp, which is a 64-bit
  */
 
 inline timestamp rdtscp(void) {
@@ -53,7 +53,7 @@ void set_LOOP_COUNTER(int loops) {
 void set_CPU_FREQ() {
    // Find and set CPU frequency, but for now do nothing.
 }
- 
+
 void set_BLOCK_SIZE(int block_size) {
     BLOCK_SIZE = block_size;
 }
@@ -64,6 +64,10 @@ void set_FILE_COUNT(int file_count) {
 
 void set_MAX_FILES(int files) {
     MAX_FILES = files;
+}
+
+void set_FILE_SIZE(int size) {
+    FILE_SIZE_WR = size;
 }
 
 /*
@@ -93,15 +97,15 @@ void randomize_more(int *index, int size,struct drand48_data *randBuffer ) {
     }
     return;
 }
- 
+
 /*
  * Name             read_sequential
  * Description      Read all the files in a sequential way.
  *                  -   The files to be read must be opened and placed in share_it.fd_list
- *                      We choose the files in a random order, so that the effects of 
+ *                      We choose the files in a random order, so that the effects of
  *                      prefetching are minimized.
  *                  -   Reads the number of files FILE_COUNT sequentially by reading a block
- *                      of BLOCK_SIZE in each read operation. 
+ *                      of BLOCK_SIZE in each read operation.
  *                  -   Small files are 64 bytes - 32 kB.
  *                  -   Big files are 32 kb onwards.
  *                  -   For small files, I have meassured with block size as 64 bytes
@@ -128,8 +132,8 @@ bool read_sequential(struct share_it* my_state) {
             printf("Seek to start of file failed with errno %d\n",
                        err);
                 exit(1);
-        }    
-        while ((size > 0)) { 
+        }
+        while ((size > 0)) {
             RDTSCP(start);
             bytes = read(fd, my_state->buf, my_state->block_size);
             RDTSCP(end);
@@ -152,12 +156,12 @@ bool read_sequential(struct share_it* my_state) {
  * Name             read_random
  * Description      Read all the files in a random order.
  *                  -   The files to be read must be opened and placed in share_it.fd_list
- *                      We choose the files in a random order, so that the effects of 
+ *                      We choose the files in a random order, so that the effects of
  *                      prefetching are minimized.
  *                  -   Reads the number of files FILE_COUNT with random access by reading a block
  *                      of BLOCK_SIZE in each read operation.
  *                  -   Random access offset is determined by share_it.index.
- *                  -   Read block sizes are determined by share_it.block_size. 
+ *                  -   Read block sizes are determined by share_it.block_size.
  *                  -   Defaults are same as read_sequential.
  *                  -   Measures only read. Overhead is only the overhead of measuring time
  *                      itself.
@@ -217,8 +221,8 @@ bool open_read_close(struct share_it* my_state, char *filepath) {
     int bytes           = 0;
 
     struct drand48_data     randBuffer;
-    srand48_r(time(NULL), &randBuffer);   
- 
+    srand48_r(time(NULL), &randBuffer);
+
     int i           = 0;
     long int random = 0;
     int idx         = 0;
@@ -262,8 +266,15 @@ bool open_read_close(struct share_it* my_state, char *filepath) {
  * Name             write_sequential
  * Description      Write all the files in a sequential way.
  *                  -   The files to be written to must be opened and placed in share_it.fd_list
+<<<<<<< HEAD
  *                  -   Writes  the number of files FILE_COUNT sequentially by writing a block
  *                      of BLOCK_SIZE in each write operation. 
+=======
+ *                      We choose the files in a random order, so that the effects of
+ *                      prefetching are minimized.
+ *                  -   Writes the number of files FILE_COUNT sequentially by writing a block
+ *                      of BLOCK_SIZE in each write operation.
+>>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
  *                  -   Small files are 64 bytes - 32 kB.
  *                  -   Big files are 32 kb onwards.
  *                  -   For small files, I have meassured with block size as 64 bytes
@@ -280,6 +291,10 @@ bool write_sequential(struct share_it* my_state) {
     timestamp start     = 0;
     timestamp end       = 0;
     int bytes           = 0;
+<<<<<<< HEAD
+=======
+    int rand_bytes      = 0;
+>>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
 
     int i = 0;
     for (i = 0; i < my_state->count; i++) {
@@ -287,19 +302,42 @@ bool write_sequential(struct share_it* my_state) {
         int fd              = my_state->fd_list[i];
         if (lseek(fd, 0, SEEK_SET) == -1) {
             int err = errno;
+<<<<<<< HEAD
             printf("Seek to start of file failed with errno %d\n",
                        err);
                 exit(1);
         }    
         while ((size > 0)) { 
+=======
+            printf("Seek to start of file failed with errno %d\n", err);
+            exit(1);
+        }
+
+        while ((size > 0)) {
+            // fill buf with random data
+/*            rand_bytes = syscall(SYS_getrandom, my_state->buf, my_state->block_size, 0);
+            if (rand_bytes == -1 || rand_bytes != my_state->block_size) {
+                int err = errno;
+                printf("Could not get random data, failed with err=%d and bytes =%d while block_size=%zu\n", errno, bytes, my_state->block_size);
+                return false;
+            }
+*/
+>>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
             RDTSCP(start);
             bytes = write(fd, my_state->buf, my_state->block_size);
             RDTSCP(end);
              if (bytes <= 0 || bytes != my_state->block_size) {
                 int err = errno;
+<<<<<<< HEAD
                 printf("Write failed with err=%d and bytes =%d while block_size=%zu\n", errno, bytes, my_state->block_size);
                 return false;
              }
+=======
+                printf("write failed with err=%d and bytes =%d while block_size=%zu\n", errno, bytes, my_state->block_size);
+                return false;
+             }
+            dummy_call(my_state->buf);
+>>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
             *(my_state->total_bytes) += bytes;
             my_state->duration  += (end - start);
             size -= bytes;
@@ -309,4 +347,66 @@ bool write_sequential(struct share_it* my_state) {
     return true;
 }
 
+<<<<<<< HEAD
 
+=======
+/*
+ * Name             write_random
+ * Description      Write all the files in a random order.
+ *                  -   The files to be written must be opened and placed in share_it.fd_list
+ *                      We choose the files in a random order, so that the effects of
+ *                      prefetching are minimized.
+ *                  -   Writes the number of files FILE_COUNT with random access by reading a block
+ *                      of BLOCK_SIZE in each write operation.
+ *                  -   Random access offset is determined by share_it.index.
+ *                  -   Write block sizes are determined by share_it.block_size.
+ *                  -   Defaults are same as write_sequential.
+ *                  -   Measures only write. Overhead is only the overhead of measuring time
+ *                      itself.
+ * Input            struct share_it
+ * Output           Boolean to indicate if all writes succeed.
+ */
+bool write_random(struct share_it* my_state) {
+    size_t size         = my_state->size;
+    timestamp start     = 0;
+    timestamp end       = 0;
+    int bytes           = 0;
+    int rand_bytes      = 0;
+
+
+    int i = 0;
+    for (i = 0; i < my_state->count; i++) {
+        size_t size         = my_state->size;
+        int fd              = my_state->fd_list[i];
+        int j = 0;
+        while ((size > 0)) {
+            // fill buf with random data
+/*          rand_bytes = syscall(SYS_getrandom, my_state->buf, my_state->block_size, 0);
+            if (rand_bytes == -1 || rand_bytes != my_state->block_size) {
+                int err = errno;
+                printf("Could not get random data, failed with err=%d and bytes =%d while block_size=%zu\n", errno, bytes, my_state->block_size);
+                return false;
+            }
+*/
+            if (lseek(fd, my_state->offsets[j] * BLOCK_SIZE, SEEK_SET) == -1) {
+                int err = errno;
+                printf("Seek to start of file failed with errno %d\n",
+                       err);
+                exit(1);
+            }
+            RDTSCP(start);
+            bytes = write(fd, my_state->buf, my_state->block_size);
+            RDTSCP(end);
+             if (bytes <= 0 || bytes != my_state->block_size)
+                return false;
+            dummy_call(my_state->buf);
+            *(my_state->total_bytes) += bytes;
+            my_state->duration  += (end - start);
+            size -= bytes;
+            j++;
+        }
+    }
+
+    return true;
+}
+>>>>>>> 6f44a32833d97b0eacfee1b95ac146c9b1831f37
