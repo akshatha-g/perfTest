@@ -4,7 +4,7 @@
 int LOOP_COUNTER     = 100;
 double CPU_FREQ      = 2593.696; // Mhz
 int BLOCK_SIZE       = (32 * 1024);
-int FILE_COUNT       = 300;
+int FILE_COUNT       = 1000;
 int MAX_FILES        = 5000;
 
 
@@ -257,3 +257,56 @@ bool open_read_close(struct share_it* my_state, char *filepath) {
     return true;
 
 }
+
+/*
+ * Name             write_sequential
+ * Description      Write all the files in a sequential way.
+ *                  -   The files to be written to must be opened and placed in share_it.fd_list
+ *                  -   Writes  the number of files FILE_COUNT sequentially by writing a block
+ *                      of BLOCK_SIZE in each write operation. 
+ *                  -   Small files are 64 bytes - 32 kB.
+ *                  -   Big files are 32 kb onwards.
+ *                  -   For small files, I have meassured with block size as 64 bytes
+ *                      For big files, I have measured with block size as 32 kB
+ *                  -   This routine is also used to measure the time to write a full file by
+ *                      share_it.block_size to same as file size.
+ *                  -   Measures only write. Overhead is only the overhead of measuring time
+ *                      itself.
+ * Input            struct share_it
+ * Output           Boolean to indicate if all writes succeed.
+ */
+bool write_sequential(struct share_it* my_state) {
+    size_t size         = my_state->size;
+    timestamp start     = 0;
+    timestamp end       = 0;
+    int bytes           = 0;
+
+    int i = 0;
+    for (i = 0; i < my_state->count; i++) {
+        size_t size         = my_state->size;
+        int fd              = my_state->fd_list[i];
+        if (lseek(fd, 0, SEEK_SET) == -1) {
+            int err = errno;
+            printf("Seek to start of file failed with errno %d\n",
+                       err);
+                exit(1);
+        }    
+        while ((size > 0)) { 
+            RDTSCP(start);
+            bytes = write(fd, my_state->buf, my_state->block_size);
+            RDTSCP(end);
+             if (bytes <= 0 || bytes != my_state->block_size) {
+                int err = errno;
+                printf("Write failed with err=%d and bytes =%d while block_size=%zu\n", errno, bytes, my_state->block_size);
+                return false;
+             }
+            *(my_state->total_bytes) += bytes;
+            my_state->duration  += (end - start);
+            size -= bytes;
+        }
+    }
+
+    return true;
+}
+
+
